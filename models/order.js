@@ -2,13 +2,13 @@ const { Model, DataTypes } = require('sequelize');
 
 const sequelize = require('../util/datebase');
 
-class Cart extends Model {
+class Order extends Model {
     get id() {
         return this.getDataValue('id');
     }
 }
 
-Cart.init(
+Order.init(
     {
         id: {
             type: DataTypes.INTEGER,
@@ -17,7 +17,7 @@ Cart.init(
             primaryKey: true
         }
     },
-    { sequelize, modelName: 'cart' }
+    { sequelize, modelName: 'order' }
 );
 
-module.exports = Cart;
+module.exports = Order;
