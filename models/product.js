@@ -1,68 +1,49 @@
-const { Model, DataTypes } = require('sequelize');
+const ObjectID = require('mongodb').ObjectID;
 
-const sequelize = require('../util/datebase');
+const { getDb } = require('../util/datebase');
 
-class Product extends Model {
-    get id() {
-        return this.getDataValue('id');
+class Product {
+    constructor(title, price, description, imageUrl, id) {
+        this.title = title;
+        this.price = price;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this._id = id ? new ObjectID(id) : null;
     }
 
-    get title() {
-        return this.getDataValue('title');
+    save() {
+        const db = getDb();
+
+        const dbOperator = !this._id
+            ? db.collection('products').insertOne(this)
+            : db.collection('products').findOneAndUpdate(
+                  { _id: new ObjectID(this._id) },
+                  {
+                      $set: this
+                  }
+              );
+
+        return dbOperator;
     }
 
-    set title(val) {
-        this.setDataValue('title', val);
+    static fetchAll() {
+        const db = getDb();
+        return db
+            .collection('products')
+            .find()
+            .toArray();
     }
 
-    get description() {
-        return this.getDataValue('description');
+    static findById(id) {
+        const db = getDb();
+        return db.collection('products').findOne({ _id: new ObjectID(id) });
     }
 
-    set description(val) {
-        this.setDataValue('description', val);
-    }
+    static deleteById(id) {
+        const db = getDb();
 
-    get imageUrl() {
-        return this.getDataValue('imageUrl');
-    }
-
-    set imageUrl(val) {
-        this.setDataValue('imageUrl', val);
-    }
-
-    get price() {
-        return this.getDataValue('price');
-    }
-
-    set price(val) {
-        this.setDataValue('price', val);
+        return db.collection('products').deleteOne({ _id: new ObjectID(id) });
     }
 }
-
-Product.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            allowNull: false,
-            primaryKey: true
-        },
-        title: DataTypes.STRING,
-        price: {
-            type: DataTypes.DOUBLE,
-            allowNull: false
-        },
-        imageUrl: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        description: {
-            type: DataTypes.STRING,
-            allowNull: false
-        }
-    },
-    { sequelize, modelName: 'product' }
-);
 
 module.exports = Product;
